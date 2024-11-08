@@ -14,6 +14,7 @@ import com.craftaro.ultimateclaims.tasks.VisualizeTask;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.FallingBlock;
@@ -38,6 +39,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.vehicle.VehicleEnterEvent;
 import org.bukkit.event.vehicle.VehicleMoveEvent;
+import org.bukkit.event.world.PortalCreateEvent;
 import org.bukkit.material.Dispenser;
 import org.bukkit.projectiles.ProjectileSource;
 
@@ -371,5 +373,19 @@ public class EntityListeners implements Listener {
             }
         }
         return false;
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onPortalCreate(PortalCreateEvent event) {
+        if (event.getReason() == PortalCreateEvent.CreateReason.NETHER_PAIR && !event.getBlocks().isEmpty()) {
+            ClaimManager claimManager = this.plugin.getClaimManager();
+
+            for (BlockState blockState : event.getBlocks()) {
+                if (claimManager.hasClaim(blockState.getLocation().getChunk())) {
+                    event.setCancelled(true);
+                    return;
+                }
+            }
+        }
     }
 }
